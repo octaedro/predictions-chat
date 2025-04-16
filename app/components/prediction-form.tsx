@@ -12,6 +12,11 @@ interface Message {
   content: string
   type: 'user' | 'star'
   timestamp: Date
+  star?: {
+    id: string
+    name: string
+    image: string
+  }
 }
 
 export function PredictionForm() {
@@ -53,7 +58,7 @@ export function PredictionForm() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          starId: selectedStarId,
+          starId: selectedStar.id,
           question: question.trim()
         })
       })
@@ -68,7 +73,8 @@ export function PredictionForm() {
         id: `star-${Date.now()}`,
         content: data.prediction,
         type: 'star',
-        timestamp: new Date()
+        timestamp: new Date(),
+        star: selectedStar
       }
 
       setMessages(prev => [...prev, starMessage])
@@ -100,17 +106,17 @@ export function PredictionForm() {
                     : 'bg-gradient-to-br from-zinc-700 to-zinc-800 text-white rounded-tl-none border border-zinc-600/30'
                 }`}
               >
-                {message.type === 'star' && selectedStar && (
+                {message.type === 'star' && message.star && (
                   <div className="flex items-center mb-2 pb-2 border-b border-zinc-600/30">
                     <div className="relative w-9 h-9 mr-2 overflow-hidden rounded-full border-2 border-zinc-600/50 shadow-inner">
                       <Image 
-                        src={selectedStar.image} 
-                        alt={selectedStar.name} 
+                        src={message.star.image} 
+                        alt={message.star.name} 
                         fill 
                         className="object-cover"
                       />
                     </div>
-                    <span className="font-semibold text-sm">{selectedStar.name}</span>
+                    <span className="font-semibold text-sm">{message.star.name}</span>
                   </div>
                 )}
                 <div className="text-sm md:text-base leading-relaxed">
@@ -164,11 +170,15 @@ export function PredictionForm() {
       <form onSubmit={handleSubmit} className="flex gap-2 mt-6">
         <Input
           type="text"
-          placeholder="Ask your question..."
+          placeholder={selectedStarId ? "Ask your question..." : "Select a star first..."}
           value={question}
           onChange={handleQuestionChange}
-          disabled={isLoading}
-          className="flex-1 h-12 rounded-xl bg-white text-black border-zinc-300 focus:border-purple-500 focus:ring-purple-500/20 placeholder:text-zinc-500"
+          disabled={isLoading || !selectedStarId}
+          className={`flex-1 h-12 rounded-xl border-zinc-300 transition-all duration-200 
+            ${!selectedStarId 
+              ? 'bg-zinc-100 text-zinc-400 cursor-not-allowed' 
+              : 'bg-white text-black focus:border-purple-500 focus:ring-purple-500/20'} 
+            placeholder:text-zinc-500`}
         />
         <Button
           type="submit"

@@ -37,7 +37,7 @@ const selectedStarSlice = createSlice({
   initialState,
   reducers: {
     setSelectedStarId: (state, action: PayloadAction<string>) => {
-      state.selectedStarId = action.payload
+      state.selectedStarId = action.payload === '' ? null : action.payload
     }
   }
 })
