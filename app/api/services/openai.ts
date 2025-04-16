@@ -1,6 +1,27 @@
-import { promises as fs } from 'fs'
-import path from 'path'
 import { STARS } from '../config/stars'
+import fs from 'fs'
+import path from 'path'
+import dotenv from 'dotenv'
+
+// Directly load .env.local from root
+function loadEnvFile(): void {
+  try {
+    const envPath = path.resolve(process.cwd(), '.env.local')
+    if (fs.existsSync(envPath)) {
+      const envConfig = dotenv.parse(fs.readFileSync(envPath))
+      for (const k in envConfig) {
+        process.env[k] = envConfig[k]
+      }
+    } else {
+      console.warn('No .env.local file found at:', envPath)
+    }
+  } catch (error) {
+    console.error('Error loading .env.local file:', error)
+  }
+}
+
+// Load environment variables
+loadEnvFile()
 
 interface OpenAIConfig {
   apiKey: string
@@ -11,6 +32,12 @@ interface OpenAIConfig {
 export const OPENAI_CONFIG: OpenAIConfig = {
   apiKey: process.env.OPENAI_API_KEY || '',
   model: 'gpt-3.5-turbo',
+}
+
+// Log config status
+console.log(`OpenAI API key status: ${OPENAI_CONFIG.apiKey ? 'Set' : 'Not set'}`)
+if (!OPENAI_CONFIG.apiKey) {
+  console.error('WARNING: OPENAI_API_KEY is not set! Predictions will not work.')
 }
 
 export class ValidationError extends Error {
@@ -37,9 +64,9 @@ export function getPersonaDescription(starId: string): string {
 
 export async function getPrediction(question: string, starId?: string): Promise<string> {
   try {
-    // Ensure API key is set
+    // Double-check API key
     if (!OPENAI_CONFIG.apiKey) {
-      throw new Error('OpenAI API key is not set. Please add OPENAI_API_KEY to your .env.local file.')
+      throw new Error('OpenAI API key is not set in .env.local file. Please add OPENAI_API_KEY and restart the server.')
     }
 
     const description = starId ? getPersonaDescription(starId) : 'You will predict the future.'
@@ -74,7 +101,15 @@ export async function getPrediction(question: string, starId?: string): Promise<
       throw new Error(data.error?.message || 'Failed to generate prediction')
     }
 
-    return data.choices[0]?.message?.content || 'No prediction was generated'
+    // Properly extract content from the message
+    const content = data.choices?.[0]?.message?.content
+    
+    if (!content) {
+      console.error('No content in OpenAI response:', JSON.stringify(data, null, 2))
+      return 'No prediction was generated'
+    }
+    
+    return content
   } catch (error) {
     console.error('Error getting prediction:', error)
     throw error
