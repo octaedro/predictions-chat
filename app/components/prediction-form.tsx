@@ -87,7 +87,7 @@ export function PredictionForm() {
       
       {/* Chat Messages - only shown if there are messages */}
       {(messages.length > 0 || isLoading) && (
-        <div className="mt-8 mb-6 space-y-6 bg-gradient-to-b from-zinc-900/80 to-zinc-800/50 rounded-xl border border-zinc-700/50 shadow-lg p-6">
+        <div className="mt-8 mb-6 space-y-6 bg-zinc-800/70 rounded-xl border border-zinc-700/50 shadow-lg p-6">
           {messages.map(message => (
             <div 
               key={message.id}
@@ -168,7 +168,7 @@ export function PredictionForm() {
           value={question}
           onChange={handleQuestionChange}
           disabled={isLoading}
-          className="flex-1 h-12 rounded-xl bg-zinc-800/80 border-zinc-700 focus:border-purple-500 focus:ring-purple-500/20"
+          className="flex-1 h-12 rounded-xl bg-white text-black border-zinc-300 focus:border-purple-500 focus:ring-purple-500/20 placeholder:text-zinc-500"
         />
         <Button
           type="submit"

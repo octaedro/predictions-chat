@@ -23,7 +23,7 @@ export default function RootLayout({
       <head>
         <link rel="icon" type="image/svg+xml" href="/crystal-ball.svg" />
       </head>
-      <body className={inter.className} suppressHydrationWarning>
+      <body className="min-h-screen">
         <Providers>
           {children}
         </Providers>
