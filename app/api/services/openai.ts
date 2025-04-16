@@ -34,8 +34,6 @@ export const OPENAI_CONFIG: OpenAIConfig = {
   model: 'gpt-3.5-turbo',
 }
 
-// Log config status
-console.log(`OpenAI API key status: ${OPENAI_CONFIG.apiKey ? 'Set' : 'Not set'}`)
 if (!OPENAI_CONFIG.apiKey) {
   console.error('WARNING: OPENAI_API_KEY is not set! Predictions will not work.')
 }
