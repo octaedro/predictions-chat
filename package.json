@@ -11,6 +11,7 @@
   "dependencies": {
     "@reduxjs/toolkit": "^2.2.1",
     "clsx": "^2.1.0",
+    "dotenv": "^16.5.0",
     "next": "14.1.0",
     "openai": "^4.94.0",
     "react": "^18.2.0",
