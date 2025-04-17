@@ -1,7 +1,12 @@
-import { selectedStarReducer } from './reducer'
-import { STARS } from '@/app/components/constants'
-
-export { selectedStarReducer, STARS }
+// Export actions
 export * from './actions'
+
+// Export selectors
 export * from './selectors'
-export * from './types' 
+
+// Export types
+export * from './types'
+
+// Export reducer as default
+import reducer from './reducer'
+export { reducer as selectedStarReducer } 

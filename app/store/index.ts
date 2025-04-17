@@ -1,5 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit'
-import { selectedStarReducer } from './selected-star'
+import selectedStarReducer from './selected-star/reducer'
 import { SelectedStarState } from './selected-star/types'
 
 export const store = configureStore({
