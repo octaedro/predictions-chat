@@ -3,7 +3,46 @@ import fs from 'fs'
 import path from 'path'
 import dotenv from 'dotenv'
 
-// Directly load .env.local from root
+// Types
+interface OpenAIConfig {
+  apiKey: string
+  model: string
+  temperature: number
+  maxTokens: number
+  apiUrl: string
+}
+
+interface OpenAIMessage {
+  role: 'system' | 'user' | 'assistant'
+  content: string
+}
+
+interface OpenAIRequest {
+  model: string
+  messages: OpenAIMessage[]
+  temperature: number
+  max_tokens: number
+}
+
+interface OpenAIResponse {
+  choices?: Array<{
+    message?: {
+      content?: string
+    }
+  }>
+  error?: {
+    message: string
+  }
+}
+
+export class ValidationError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'ValidationError'
+  }
+}
+
+// Load environment file (.env.local)
 function loadEnvFile(): void {
   try {
     const envPath = path.resolve(process.cwd(), '.env.local')
@@ -20,86 +59,94 @@ function loadEnvFile(): void {
   }
 }
 
-// Load environment variables
-loadEnvFile()
-
-interface OpenAIConfig {
-  apiKey: string
-  model: string
-}
-
-// Initialize with the key from environment variables
-export const OPENAI_CONFIG: OpenAIConfig = {
-  apiKey: process.env.OPENAI_API_KEY || '',
-  model: 'gpt-3.5-turbo',
-}
-
-if (!OPENAI_CONFIG.apiKey) {
-  console.error('WARNING: OPENAI_API_KEY is not set! Predictions will not work.')
-}
-
-export class ValidationError extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = 'ValidationError'
+// Initialize configuration
+function initializeConfig(): OpenAIConfig {
+  // Load environment variables
+  loadEnvFile()
+  
+  const config: OpenAIConfig = {
+    apiKey: process.env.OPENAI_API_KEY || '',
+    model: process.env.OPENAI_MODEL || 'gpt-3.5-turbo',
+    temperature: parseFloat(process.env.OPENAI_TEMPERATURE || '0.7'),
+    maxTokens: parseInt(process.env.OPENAI_MAX_TOKENS || '300', 10),
+    apiUrl: process.env.OPENAI_API_URL || 'https://api.openai.com/v1/chat/completions'
   }
+  
+  return config
 }
 
-export async function validatePredictionRequest(text: string): Promise<void> {
-  if (!text || typeof text !== 'string' || text.trim().length === 0) {
+// Config singleton
+const CONFIG = initializeConfig()
+
+/**
+ * Validates user input for prediction requests
+ */
+export async function validatePredictionRequest(
+  input: { question: string, starId?: string }
+): Promise<void> {
+  const { question } = input
+  
+  if (!question || typeof question !== 'string' || question.trim().length === 0) {
     throw new ValidationError('Text is required')
   }
 
-  if (text.length > 500) {
+  if (question.length > 500) {
     throw new ValidationError('Text cannot be longer than 500 characters')
   }
 }
 
+/**
+ * Gets persona description for a specific star
+ */
 export function getPersonaDescription(starId: string): string {
   const description = STARS.get(starId) || 'You will predict the future.'
   return `${description} Predict the future with your unique perspective.`
 }
 
-export async function getPrediction(question: string, starId?: string): Promise<string> {
+/**
+ * Makes prediction request to OpenAI API
+ */
+export async function getPrediction(
+  { question, starId }: { question: string; starId?: string }
+): Promise<string> {
   try {
-    // Double-check API key
-    if (!OPENAI_CONFIG.apiKey) {
+    // Ensure API key is configured
+    if (!CONFIG.apiKey) {
       throw new Error('OpenAI API key is not set in .env.local file. Please add OPENAI_API_KEY and restart the server.')
     }
 
+    // Build request payload
     const description = starId ? getPersonaDescription(starId) : 'You will predict the future.'
+    const requestData: OpenAIRequest = {
+      model: CONFIG.model,
+      messages: [
+        { role: 'system', content: description },
+        { role: 'user', content: question }
+      ],
+      temperature: CONFIG.temperature,
+      max_tokens: CONFIG.maxTokens
+    }
     
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Make API request
+    const response = await fetch(CONFIG.apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${OPENAI_CONFIG.apiKey}`,
+        'Authorization': `Bearer ${CONFIG.apiKey}`
       },
-      body: JSON.stringify({
-        model: OPENAI_CONFIG.model,
-        messages: [
-          {
-            role: 'system',
-            content: description,
-          },
-          {
-            role: 'user',
-            content: question,
-          },
-        ],
-        temperature: 0.7,
-        max_tokens: 300,
-      }),
+      body: JSON.stringify(requestData)
     })
 
-    const data = await response.json()
-
+    // Parse response
+    const data = await response.json() as OpenAIResponse
+    
+    // Handle API errors
     if (!response.ok) {
       console.error('OpenAI API error:', data)
       throw new Error(data.error?.message || 'Failed to generate prediction')
     }
 
-    // Properly extract content from the message
+    // Extract content from response
     const content = data.choices?.[0]?.message?.content
     
     if (!content) {
