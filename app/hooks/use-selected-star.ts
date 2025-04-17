@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { selectSelectedStarId, selectSelectedStar } from '../store/selected-star/selectors'
 import { setSelectedStarId } from '../store/selected-star/actions'
 import { AppDispatch } from '../store'
-import { STARS } from '../components/constants'
 
 export function useSelectedStar() {
   const dispatch = useDispatch<AppDispatch>()
