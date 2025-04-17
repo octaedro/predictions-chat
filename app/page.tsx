@@ -1,4 +1,4 @@
-import { PredictionForm } from './components/prediction-form'
+import { PredictionForm } from './components/prediction-form/index'
 import { BackgroundWrapper } from './components/BackgroundWrapper'
 
 export default function Home() {
