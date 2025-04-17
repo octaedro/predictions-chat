@@ -1,14 +1,8 @@
 'use client'
 
-import { Star } from './types'
-
 interface PredictionRequest {
   starId: string
   question: string
-}
-
-interface PredictionResponse {
-  prediction: string
 }
 
 export async function getPrediction({ starId, question }: PredictionRequest): Promise<string> {
