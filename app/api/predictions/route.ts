@@ -13,8 +13,8 @@ export async function POST(req: Request) {
       )
     }
 
-    await validatePredictionRequest(question)
-    const prediction = await getPrediction(question, starId)
+    await validatePredictionRequest({ question, starId })
+    const prediction = await getPrediction({ question, starId })
 
     return NextResponse.json({ prediction })
   } catch (error) {
@@ -22,6 +22,13 @@ export async function POST(req: Request) {
     
     if (error instanceof ValidationError) {
       return NextResponse.json({ error: error.message }, { status: 400 })
+    }
+    
+    if (error instanceof Error && error.message === 'OpenAI API key not configured') {
+      return NextResponse.json(
+        { error: 'OpenAI API is not configured on the server. Please contact the administrator.' },
+        { status: 503 }
+      )
     }
     
     return NextResponse.json(

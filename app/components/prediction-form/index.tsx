@@ -6,7 +6,7 @@ import { StarSelector } from '../star-selector'
 import { MessageList } from './message-list'
 import { ErrorMessage } from './error-message'
 import { QuestionInput } from './question-input'
-import { getPrediction } from './prediction-service'
+import { getPrediction } from '../../services/prediction-service'
 import { MessageType } from './types'
 
 export function PredictionForm() {
