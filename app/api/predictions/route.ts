@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { ValidationError, validatePredictionRequest, getPrediction } from '../services/openai';
+import { ValidationError, validatePredictionRequest, getPrediction } from '../../services/openai';
 
 export async function POST(req: Request) {
   try {

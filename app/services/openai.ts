@@ -1,4 +1,4 @@
-import { STARS } from '../config/stars'
+import { STARS } from '../api/config/stars'
 import fs from 'fs'
 import path from 'path'
 import dotenv from 'dotenv'
