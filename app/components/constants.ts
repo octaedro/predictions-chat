@@ -1,6 +1,6 @@
 import { Star } from '@/app/store/selected-star/types'
 
-export const stars: Star[] = [
+export const STARS: Star[] = [
   {
     id: 'michael',
     name: 'Michael Jackson',
