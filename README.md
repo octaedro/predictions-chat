@@ -75,3 +75,25 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - Redux for state management
 - Tailwind CSS for styling
 - Docker for containerization
+
+## Testing
+
+This project uses Jest and React Testing Library for unit tests.
+
+To run all tests:
+
+```bash
+npm test
+```
+
+To run in watch mode:
+
+```bash
+npm run test:watch
+```
+
+To generate a coverage report:
+
+```bash
+npm run test:coverage
+```
