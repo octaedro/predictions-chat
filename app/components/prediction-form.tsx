@@ -93,7 +93,7 @@ export function PredictionForm() {
       
       {/* Chat Messages - only shown if there are messages */}
       {(messages.length > 0 || isLoading) && (
-        <div className="mt-8 mb-6 space-y-6 bg-zinc-800/70 rounded-xl border border-zinc-700/50 shadow-lg p-6">
+        <div className="mt-8 mb-6 space-y-6 bg-zinc-100/70 rounded-xl border border-zinc-100/50 shadow-lg p-6">
           {messages.map(message => (
             <div 
               key={message.id}
@@ -102,12 +102,12 @@ export function PredictionForm() {
               <div 
                 className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-md ${
                   message.type === 'user' 
-                    ? 'bg-gradient-to-br from-purple-600 to-purple-700 text-white rounded-tr-none' 
-                    : 'bg-gradient-to-br from-zinc-700 to-zinc-800 text-white rounded-tl-none border border-zinc-600/30'
+                    ? 'bg-gradient-to-br bg-purple-700 text-white rounded-tr-none' 
+                    : 'bg-gradient-to-br from-zinc-500 to-zinc-700 text-white rounded-tl-none border border-zinc-100/30'
                 }`}
               >
                 {message.type === 'star' && message.star && (
-                  <div className="flex items-center mb-2 pb-2 border-b border-zinc-600/30">
+                  <div className="flex items-center mb-2 pb-2 border-b border-zinc-100/30">
                     <div className="relative w-9 h-9 mr-2 overflow-hidden rounded-full border-2 border-zinc-600/50 shadow-inner">
                       <Image 
                         src={message.star.image} 
