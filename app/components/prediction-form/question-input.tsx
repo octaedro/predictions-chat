@@ -19,7 +19,7 @@ export function QuestionInput({
   selectedStarId
 }: QuestionInputProps) {
   return (
-    <form onSubmit={onSubmit} className="flex flex-col sm:flex-row gap-2 mt-6">
+    <form onSubmit={onSubmit} className="flex flex-col sm:flex-row gap-2 mt-6" role="form">
       <Input
         type="text"
         placeholder={selectedStarId ? "Ask your question..." : "Select a star first..."}
