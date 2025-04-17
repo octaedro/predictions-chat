@@ -2,7 +2,8 @@
 
 import Image from 'next/image'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectSelectedStarId, setSelectedStarId } from '../store/selected-star'
+import { selectSelectedStarId } from '../store/selected-star/selectors'
+import { setSelectedStarId } from '../store/selected-star/actions'
 import { STARS } from './constants'
 import { combineClassNames } from '@/lib/utils'
 
@@ -16,7 +17,7 @@ export function StarSelector() {
 
   return (
     <div className="w-full">
-      <h2 className="text-lg font-semibold mb-4 text-white/90">Choose a celebrity:</h2>
+      <h2 className="text-lg font-semibold mb-4">Choose a celebrity:</h2>
       <div className="flex gap-4 mb-6 flex-wrap">
         {STARS.map((star) => (
           <button
