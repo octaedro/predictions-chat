@@ -74,7 +74,33 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - React and TypeScript
 - Redux for state management
 - Tailwind CSS for styling
+- Prisma ORM with SQLite database
+- UUID for user identification
 - Docker for containerization
+- Jest and React Testing Library for testing
+
+## API Endpoints
+
+The application exposes the following API endpoints:
+
+### Predictions API
+
+- **POST /api/predictions**
+  - Generates a prediction based on user input and selected celebrity
+  - Requires `question`, `starId`, and `userId` in the request body
+  - Stores the prediction history in the database
+
+### History API
+
+- **GET /api/history?userId={userId}**
+  - Returns all prediction history for a specific user
+  - Example: `http://localhost:3000/api/history?userId=123e4567-e89b-12d3-a456-426614174000`
+
+### Clear History API
+
+- **DELETE /api/clear-history?userId={userId}**
+  - Deletes all prediction history for a specific user
+  - Useful for maintaining privacy or starting fresh conversations
 
 ## Testing
 
