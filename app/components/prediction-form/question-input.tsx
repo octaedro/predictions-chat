@@ -22,7 +22,7 @@ export function QuestionInput({
     <form onSubmit={onSubmit} className="flex flex-col sm:flex-row gap-2 mt-6" role="form">
       <Input
         type="text"
-        placeholder={selectedStarId ? "Ask your question..." : "Select a star first..."}
+        placeholder={selectedStarId ? "Ask your question..." : "Select a celebrity first..."}
         value={question}
         onChange={onChange}
         disabled={isLoading || !selectedStarId}
