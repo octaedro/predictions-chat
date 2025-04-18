@@ -2,6 +2,8 @@
 
 A Next.js application for AI-generated predictions from celebrity personas.
 
+![Screenshot 2025-04-17 at 11 59 27 PM](https://github.com/user-attachments/assets/3c47f2a9-38a7-4ae9-8432-10f1f563e35c)
+
 ## Environment Setup
 
 This project uses OpenAI's API for generating predictions. To set up your environment:
