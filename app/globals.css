@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Add fade-out animation */
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  75% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.animate-fadeOut {
+  animation: fadeOut 3s linear forwards;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

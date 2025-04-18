@@ -30,4 +30,26 @@ export async function getPrediction({ starId, question }: PredictionRequest): Pr
   }
 
   return data.prediction
+}
+
+/**
+ * Clears all history for a user
+ */
+export async function clearHistory(userId: string): Promise<boolean> {
+  try {
+    const response = await fetch(`/api/clear-history?userId=${encodeURIComponent(userId)}`, {
+      method: 'DELETE',
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to clear history')
+    }
+
+    return true
+  } catch (error) {
+    console.error('Error clearing history:', error)
+    throw error
+  }
 } 

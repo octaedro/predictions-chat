@@ -38,4 +38,20 @@ export async function getUserPredictions(userId: string) {
     console.error('Error getting user predictions:', error)
     throw error
   }
+}
+
+/**
+ * Delete all predictions for a specific user
+ */
+export async function deleteUserPredictions(userId: string) {
+  try {
+    return await prisma.prediction.deleteMany({
+      where: {
+        userId
+      }
+    })
+  } catch (error) {
+    console.error('Error deleting user predictions:', error)
+    throw error
+  }
 } 
