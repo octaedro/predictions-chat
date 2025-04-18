@@ -3,7 +3,6 @@ import { getUserPredictions } from './db-service'
 import fs from 'fs'
 import path from 'path'
 import dotenv from 'dotenv'
-import { OPENAI_CONFIG } from '../api/config/openai'
 
 // Types
 interface OpenAIConfig {
@@ -11,6 +10,7 @@ interface OpenAIConfig {
   model: string
   temperature: number
   maxTokens: number
+  maxContextLength: number
   apiUrl: string
 }
 
@@ -71,6 +71,8 @@ function initializeConfig(): OpenAIConfig {
     model: process.env.OPENAI_MODEL || 'gpt-3.5-turbo',
     temperature: parseFloat(process.env.OPENAI_TEMPERATURE || '0.7'),
     maxTokens: parseInt(process.env.OPENAI_MAX_TOKENS || '100', 10),
+     // Set a reasonable character limit for context (about 2000-3000 tokens)
+    maxContextLength: parseInt(process.env.OPENAI_MAX_CONTEXT_LENGTH || '8000', 10),
     apiUrl: process.env.OPENAI_API_URL || 'https://api.openai.com/v1/chat/completions'
   }
   
@@ -109,31 +111,55 @@ export function getDescription(starId?: string): string {
 
 /**
  * Builds a chat context from the prediction history
+ * Prioritizes recent messages and trims older ones if needed
  */
-function buildChatContext(userPredictions: any[], currentStarId: string): string {
+function buildChatContext(userPredictions: any[], currentStarId: string, currentQuestion: string): string {
   if (!userPredictions.length) return ''
-  
-  let context = 'Here are our previous conversations:\n\n'
-  let lengthSoFar = context.length
-  
-  // get the names of the stars
+   
+  // Get the names of the stars
   const getStarName = (id: string) => {
     const star = STARS.find(s => s.id === id)
     return star ? star.name : 'Celebrity'
   }
   
-  // process predictions from most recent to oldest
-  for (const pred of userPredictions) {
+  // Format each prediction as conversation entries
+  const conversationEntries = userPredictions.map(pred => {
     const starName = getStarName(pred.starId)
-    const entry = `User: ${pred.question}\n${starName}: ${pred.prediction}\n\n`
+    return `User: ${pred.question}\n${starName}: ${pred.prediction}\n\n`
+  })
+  
+  // Start with header
+  let context = 'Here are our previous conversations:\n\n'
+  
+  // Add entries from newest to oldest until we hit the limit
+  let remainingLength = CONFIG.maxContextLength - context.length
+  let includedEntries = []
+  
+  for (let i = 0; i < conversationEntries.length; i++) {
+    const entry = conversationEntries[i]
     
-    // check if adding this entry would exceed the limit
-    if (lengthSoFar + entry.length > OPENAI_CONFIG.maxTokens) break
-    
-    context += entry
-    lengthSoFar += entry.length
+    if (entry.length <= remainingLength) {
+      includedEntries.unshift(entry) // Add to beginning to maintain chronological order
+      remainingLength -= entry.length
+    } else if (i === conversationEntries.length - 1) {
+      // If even the most recent message is too long, include a truncated version
+      const truncatedEntry = entry.substring(0, remainingLength)
+      includedEntries.push(truncatedEntry)
+      remainingLength = 0
+      break
+    } else {
+      // If this entry doesn't fit, skip it and keep checking older ones
+      // (though they'll likely be too long as well)
+      continue
+    }
   }
   
+  // Add all included entries to the context
+  context += includedEntries.join('')
+
+  // Add the current question to the context
+  context += `\n\nUser: ${currentQuestion}\n` 
+    
   return context
 }
 
@@ -176,12 +202,12 @@ export async function getPrediction(
     let chatHistory = ''
     if (userId) {
       const userPredictions = await getUserPredictions(userId)
-      chatHistory = buildChatContext(userPredictions, starId || '')
+      chatHistory = buildChatContext(userPredictions, starId || '', question)
     }
 
     // Build request payload
     const description = starId ? getDescription(starId) : 'You will predict the future.'
-    
+
     // Create system message with history context if available
     let systemContent = description
     if (chatHistory) {
