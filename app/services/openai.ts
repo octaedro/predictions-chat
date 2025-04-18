@@ -1,7 +1,9 @@
 import { STARS } from '../constants/stars'
+import { getUserPredictions } from './db-service'
 import fs from 'fs'
 import path from 'path'
 import dotenv from 'dotenv'
+import { OPENAI_CONFIG } from '../api/config/openai'
 
 // Types
 interface OpenAIConfig {
@@ -82,7 +84,7 @@ const CONFIG = initializeConfig()
  * Validates user input for prediction requests
  */
 export async function validatePredictionRequest(
-  input: { question: string, starId?: string }
+  input: { question: string, starId?: string, userId?: string }
 ): Promise<void> {
   const { question } = input
   
@@ -96,9 +98,9 @@ export async function validatePredictionRequest(
 }
 
 /**
- * Gets persona description for a specific star
+ * Gets description for a specific star
  */
-export function getPersonaDescription(starId?: string): string {
+export function getDescription(starId?: string): string {
   if (!starId) return 'You will predict the future.'
   const starConfig = STARS.find(star => star.id === starId)
   const description = starConfig?.description
@@ -106,23 +108,90 @@ export function getPersonaDescription(starId?: string): string {
 }
 
 /**
+ * Builds a chat context from the prediction history
+ */
+function buildChatContext(userPredictions: any[], currentStarId: string): string {
+  if (!userPredictions.length) return ''
+  
+  let context = 'Here are our previous conversations:\n\n'
+  let lengthSoFar = context.length
+  
+  // get the names of the stars
+  const getStarName = (id: string) => {
+    const star = STARS.find(s => s.id === id)
+    return star ? star.name : 'Celebrity'
+  }
+  
+  // process predictions from most recent to oldest
+  for (const pred of userPredictions) {
+    const starName = getStarName(pred.starId)
+    const entry = `User: ${pred.question}\n${starName}: ${pred.prediction}\n\n`
+    
+    // check if adding this entry would exceed the limit
+    if (lengthSoFar + entry.length > OPENAI_CONFIG.maxTokens) break
+    
+    context += entry
+    lengthSoFar += entry.length
+  }
+  
+  return context
+}
+
+/**
+ * Ensures the AI response text ends with a proper sentence.
+ * Trims any incomplete sentences at the end of the text.
+ */
+function ensureCompleteSentence(text: string): string {
+  if (!text) return text;
+  
+  // Find the last occurrence of sentence-ending punctuation
+  const lastPeriodIndex = text.lastIndexOf('.');
+  const lastQuestionIndex = text.lastIndexOf('?');
+  const lastExclamationIndex = text.lastIndexOf('!');
+  
+  // Get the index of the last punctuation mark
+  const lastIndex = Math.max(lastPeriodIndex, lastQuestionIndex, lastExclamationIndex);
+  
+  // If we found punctuation and it's not at the very end, trim the text
+  if (lastIndex !== -1 && lastIndex < text.length - 1) {
+    return text.substring(0, lastIndex + 1);
+  }
+  
+  return text;
+}
+
+/**
  * Makes prediction request to OpenAI API
  */
 export async function getPrediction(
-  { question, starId }: { question: string; starId?: string }
+  { question, starId, userId }: { question: string; starId?: string; userId?: string }
 ): Promise<string> {
   try {
     // Ensure API key is configured
     if (!CONFIG.apiKey) {
       throw new Error('OpenAI API key is not set in .env.local file. Please add OPENAI_API_KEY and restart the server.')
     }
+    
+    // Get user history if userId is provided
+    let chatHistory = ''
+    if (userId) {
+      const userPredictions = await getUserPredictions(userId)
+      chatHistory = buildChatContext(userPredictions, starId || '')
+    }
 
     // Build request payload
-    const description = starId ? getPersonaDescription(starId) : 'You will predict the future.'
+    const description = starId ? getDescription(starId) : 'You will predict the future.'
+    
+    // Create system message with history context if available
+    let systemContent = description
+    if (chatHistory) {
+      systemContent = `${description}\n\n${chatHistory}\nNow, continue our conversation by responding to the user's new question.`
+    }
+    
     const requestData: OpenAIRequest = {
       model: CONFIG.model,
       messages: [
-        { role: 'system', content: description },
+        { role: 'system', content: systemContent },
         { role: 'user', content: question }
       ],
       temperature: CONFIG.temperature,
@@ -156,7 +225,7 @@ export async function getPrediction(
       return 'No prediction was generated'
     }
     
-    return content
+    return ensureCompleteSentence(content);
   } catch (error) {
     console.error('Error getting prediction:', error)
     throw error

@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSelectedStar } from '../../hooks/use-selected-star'
 import { StarSelector } from '../star-selector'
 import { MessageList } from './message-list'
 import { ErrorMessage } from './error-message'
 import { QuestionInput } from './question-input'
 import { getPrediction } from '../../services/prediction-service'
+import { getUserId } from '../../services/user-service'
 import { MessageType } from './types'
 
 export function PredictionForm() {
@@ -14,7 +15,12 @@ export function PredictionForm() {
   const [messages, setMessages] = useState<MessageType[]>([])
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
   const { selectedStarId, selectedStar } = useSelectedStar()
+
+  useEffect(() => {
+    setUserId(getUserId())
+  }, [])
 
   function handleQuestionChange(e: React.ChangeEvent<HTMLInputElement>) {
     setQuestion(e.target.value)
@@ -61,6 +67,12 @@ export function PredictionForm() {
 
   return (
     <div className="w-full max-w-2xl mx-auto">
+      {userId && (
+        <div className="text-xs text-zinc-500 mb-2 text-right">
+          UserId: {userId}
+        </div>
+      )}
+      
       <StarSelector />
       
       <MessageList 

@@ -1,11 +1,16 @@
 'use client'
 
+import { getUserId } from './user-service'
+
 interface PredictionRequest {
   starId: string
   question: string
 }
 
 export async function getPrediction({ starId, question }: PredictionRequest): Promise<string> {
+  // Get the user ID from localStorage
+  const userId = getUserId()
+  
   const response = await fetch('/api/predictions', {
     method: 'POST',
     headers: {
@@ -13,7 +18,8 @@ export async function getPrediction({ starId, question }: PredictionRequest): Pr
     },
     body: JSON.stringify({
       starId,
-      question
+      question,
+      userId
     })
   })
 

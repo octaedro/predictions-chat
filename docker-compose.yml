@@ -9,10 +9,17 @@ services:
       - .:/app
       - /app/node_modules
       - /app/.next
+      - /app/.prisma
+      - prisma-data:/app/prisma
     environment:
       - NODE_ENV=development
       - HOST=0.0.0.0
       - PORT=3000
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - DATABASE_URL=file:/app/prisma/dev.db
     command: npm run dev -- --hostname 0.0.0.0
-    restart: unless-stopped 
+    restart: unless-stopped
+
+volumes:
+  prisma-data:
+    driver: local 
