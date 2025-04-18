@@ -1,6 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit'
 import { RootState } from '../index'
-import { STARS } from '../../components/constants'
+import { STARS } from '../../constants/stars'
 
 // Base selector - gets the selectedStarId from state
 export const selectSelectedStarId = (state: RootState) => state.selectedStar.selectedStarId

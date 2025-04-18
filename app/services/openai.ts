@@ -1,4 +1,4 @@
-import { STARS } from '../api/config/stars'
+import { STARS } from '../constants/stars'
 import fs from 'fs'
 import path from 'path'
 import dotenv from 'dotenv'
@@ -68,7 +68,7 @@ function initializeConfig(): OpenAIConfig {
     apiKey: process.env.OPENAI_API_KEY || '',
     model: process.env.OPENAI_MODEL || 'gpt-3.5-turbo',
     temperature: parseFloat(process.env.OPENAI_TEMPERATURE || '0.7'),
-    maxTokens: parseInt(process.env.OPENAI_MAX_TOKENS || '300', 10),
+    maxTokens: parseInt(process.env.OPENAI_MAX_TOKENS || '100', 10),
     apiUrl: process.env.OPENAI_API_URL || 'https://api.openai.com/v1/chat/completions'
   }
   
@@ -98,8 +98,10 @@ export async function validatePredictionRequest(
 /**
  * Gets persona description for a specific star
  */
-export function getPersonaDescription(starId: string): string {
-  const description = STARS.get(starId) || 'You will predict the future.'
+export function getPersonaDescription(starId?: string): string {
+  if (!starId) return 'You will predict the future.'
+  const starConfig = STARS.find(star => star.id === starId)
+  const description = starConfig?.description
   return `${description} Predict the future with your unique perspective.`
 }
 

@@ -4,8 +4,8 @@ import Image from 'next/image'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectSelectedStarId } from '../store/selected-star/selectors'
 import { setSelectedStarId } from '../store/selected-star/actions'
-import { STARS } from './constants'
-import { combineClassNames } from '@/lib/utils'
+import { STARS } from '../constants/stars'
+import { combineClassNames } from '../lib/utils'
 
 export function StarSelector() {
   const dispatch = useDispatch()
