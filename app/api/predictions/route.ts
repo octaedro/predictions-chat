@@ -14,13 +14,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validar la solicitud
+    // Validate the request
     await validatePredictionRequest({ question, starId, userId });
     
-    // Obtener la predicción, pasando el historial de usuario
+    // Get the prediction, passing the user's history
     const prediction = await getPrediction({ question, starId, userId });
     
-    // Guardar la predicción en la base de datos si tenemos userId
+    // Save the prediction to the database if userId is provided
     if (userId) {
       await savePrediction({
         userId,
