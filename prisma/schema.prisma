@@ -10,7 +10,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Modelo para almacenar las predicciones de los usuarios
+// Model for storing user predictions
+
 model Prediction {
   id        String   @id @default(uuid())
   userId    String
